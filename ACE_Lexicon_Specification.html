@@ -1,0 +1,508 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>ACE Lexicon. Specification</title>
+<meta name="Author" content="Kaarel Kaljurand"/>
+<meta name="Author" content="Tobias Kuhn"/>
+<script type="text/javascript" src="http://attempto.ifi.uzh.ch/site/script/toc.js"></script>
+<link rel="stylesheet" title="default" href="http://attempto.ifi.uzh.ch/site/css/ace.css" media="screen" type="text/css"/>
+</head>
+
+<body onload="toc(1, 0)">
+
+from: http://attempto.ifi.uzh.ch/site/docs/ace_lexicon.html
+
+<h1>ACE 6.7 Lexicon Specification</h1>
+
+
+<h2>General notes</h2>
+
+<p>This document describes the lexicon format for ACE 6.7.</p>
+
+<p>Lexicons can be used in two ways. They can be used as a <em>Clex</em> ("common lexicon" or "compiled
+lexicon") which is compiled into the APE executable. Alternatively, they can be used as a <em>Ulex</em>
+("user lexicon" or "uncompiled lexicon") that is loaded at run-time using the command line, the web
+interface, the web service, or any other interface to the parser.</p>
+
+<p>User lexicons <em>Ulex</em> can be used independently, or can complement <em>Clex</em> in 
+which case entries of <em>Ulex</em> take precedence over those of <em>Clex</em>.</p>
+
+<p>The ACE lexicon describes English adverbs, adjectives, nouns, verbs, and prepositions.
+It does not describe function words like pronouns or quantifiers. There are 11 different word classes:
+adverbs, intransitive adjectives, transitive adjectives, countable nouns, mass nouns, measurement nouns,
+proper names, intransitive verbs, transitive verbs, ditransitive verbs, and prepositions.</p>
+
+<p>The different forms of the words are represented by different Prolog facts. Each fact
+minimally contains one entry that defines the word form which will appear in the ACE text, and
+one entry that defines the symbol how it will appear in the logical representation. All entries
+must be Prolog atoms. Furthermore, the entry for the word form (that will appear in the ACE text)
+must contain nothing but lower and upper case letters (<code>a-z</code>,
+<code>A-Z</code>), digits (<code>0-9</code>), hyphens (<code>-</code>), underscores (<code>_</code>),
+dollar signs (<code>$</code>), and degree signs (<code>°</code>). The first character must not be
+a digit or a hyphen. Blank spaces are not allowed. You should use hyphens in places where blank spaces
+would be used in natural English. E.g. write 'credit-card' instead of 'credit card'.</p>
+
+<p>Because the lexicon is written in Prolog, symbols special for Prolog
+(e.g. apostrophe) must be escaped. Capitalized words (e.g. proper names)
+must be in quotes, otherwise they would be considered variables by Prolog.</p>
+
+
+<h2>Word classes</h2>
+
+<h3>Adverbs</h3>
+
+<p>Adverbs (e.g. "fast", "quickly", "intensively") are represented by
+three different kinds of entries, defining the positive form, the comparative form, and the
+superlative form respectively:</p>
+
+<pre>
+adv(PositiveForm, LogicalSymbol).
+adv_comp(ComparativeForm, LogicalSymbol).
+adv_sup(SuperlativeForm, LogicalSymbol).
+</pre>
+
+<p>For regular comparative and superlative forms (starting with "more" or
+"most"), only the positive form needs to be defined. In order to use "more quickly", for example,
+it is sufficient to define the positive form "quickly". Some concrete examples:</p>
+
+<pre>
+adv(fast, fast).
+adv_comp(faster, fast).
+adv_sup(fastest, fast).
+
+adv(quickly, quickly).
+
+adv(intensively, intensively).
+</pre>
+
+<p>It is recommended to use the positive form also as the logical symbol. Furthermore, it is recommended
+to define a positive form for each comparative or superlative form.</p>
+
+
+<h3>Intransitive adjectives</h3>
+
+<p>Intransitive adjectives (e.g. "important", "large", "expensive") are represented by
+three different kinds of entries, defining the positive form, the comparative form, and the
+superlative form respectively:</p>
+
+<pre>
+adj_itr(PositiveForm, LogicalSymbol).
+adj_itr_comp(ComparativeForm, LogicalSymbol).
+adj_itr_sup(SuperlativeForm, LogicalSymbol).
+</pre>
+
+<p>Again, for regular comparative and superlative forms (starting with "more" or
+"most"), only the positive form needs to be defined. Some concrete examples:</p>
+
+<pre>
+adj_itr(important, important).
+
+adj_itr(large, large).
+adj_itr_comp(larger, large).
+adj_itr_sup(largest, large).
+
+adj_itr(expensive, expensive).
+</pre>
+
+<p>It is recommended to use the positive form also as the logical symbol. Furthermore, it is recommended
+to define a positive form for each comparative or superlative form.</p>
+
+
+<h3>Transitive adjectives</h3>
+
+<p>Transitive adjectives (e.g. "valid-for", "fond-of", "pessimistic-about") are represented by
+three different kinds of entries, defining the positive form, the comparative form, and the
+superlative form respectively:</p>
+
+<pre>
+adj_tr(PositiveForm, LogicalSymbol, Preposition).
+adj_tr_comp(ComparativeForm, LogicalSymbol, Preposition).
+adj_tr_sup(SuperlativeForm, LogicalSymbol, Preposition).
+</pre>
+
+<p>Transitive adjectives should consist of an adjective and a preposition that is hyphenated to the adjective.
+Again, for regular comparative and superlative forms (starting with "more" or "most"), only the positive form needs to be defined.
+<tt>Preposition</tt> is the preposition part of the word, e.g. "for" in the case of "valid-for", "of" in the case of "fond-of", and "about"
+in the case of "pessimistic-about". It is only used for the comparative form in
+sentences where the preposition can occur on its own, like in "Mary is more fond-of Bill than <strong>of</strong> John".
+Some concrete examples:</p>
+
+<pre>
+adj_tr('valid-for', 'valid-for', for).
+
+adj_tr('fond-of', 'fond-of', of).
+adj_tr_comp('fonder-of', 'fond-of', of).
+adj_tr_sup('fondest-of', 'fond-of', of).
+
+adj_tr('pessimistic-about', 'pessimistic-about', about).
+</pre>
+
+<p>It is recommended to use the positive form also as the logical symbol. Furthermore, it is recommended
+to define a positive form for each comparative or superlative form.</p>
+
+
+<h3>Countable nouns</h3>
+
+<p>Countable nouns (e.g. "woman", "credit-card", "month") are represented by
+two different kinds of entries, defining the singular form and the plural form respectively:</p>
+
+<pre>
+noun_sg(SingularForm, LogicalSymbol, Gender).
+noun_pl(PluralForm, LogicalSymbol, Gender).
+</pre>
+
+<p>Defining a countable noun "credit-card", for example, you can say "a credit-card",
+"every credit-card", or "at most 5 credit-cards".
+The plural form should usually be the singular form with an 's' at the end like
+"credit-cards" or "months". Some concrete examples:</p>
+
+<pre>
+noun_sg(woman, woman, fem).
+noun_pl(women, woman, fem).
+
+noun_sg('credit-card', 'credit-card', neutr).
+noun_pl('credit-cards', 'credit-card', neutr).
+
+noun_sg(month, month, neutr).
+noun_pl(months, month, neutr).
+</pre>
+
+<p><tt>Gender</tt> has to be one of {<tt>undef</tt>, <tt>neutr</tt>, <tt>human</tt>, <tt>masc</tt>, <tt>fem</tt>} and
+specifies the linguistic gender of the noun. <tt>undef</tt> is the top category having two direct subcategories
+<tt>neutr</tt> and <tt>human</tt> where <tt>human</tt> has again two subcategories <tt>masc</tt> and <tt>fem</tt>.
+Depending on the gender, different forms of pronouns are supported. The table below shows the concrete pronouns.
+Note that not only the pronouns listed for a particular gender but also all pronouns of all super- and subcategories
+can be used.</p>
+
+<table>
+<thead>
+<tr>
+<td>Gender</td>
+<td>Anaphoric Pronouns</td>
+<td>Possessive Pronouns</td>
+<td>Relative Pronouns</td>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>undef</td>
+<td>they, them, themselves</td>
+<td>their, their own</td>
+<td>that, whose</td>
+</tr>
+
+<tr>
+<td>neutr</td>
+<td>it, itself</td>
+<td>its, its own</td>
+<td>which</td>
+</tr>
+
+<tr>
+<td>human</td>
+<td>he/she, she/he, him/her, her/him, himself/herself, herself/himself</td>
+<td>his/her, her/his, his/her own, her/his own</td>
+<td>who</td>
+</tr>
+
+<tr>
+<td>masc</td>
+<td>he, him, himself</td>
+<td>his, his own</td>
+<td></td>
+</tr>
+
+<tr>
+<td>fem</td>
+<td>she, her, herself</td>
+<td>her, her own</td>
+<td></td>
+</tr>
+
+</tbody>
+</table>
+
+<p>It is recommended to use the singular form also as the logical symbol. Furthermore, it is recommended
+to define a singular form for each plural form, and vice versa.</p>
+
+
+<h3>Mass nouns</h3>
+
+<p>Countable nouns (e.g. "water", "fear", "money") are represented by only one kind of entry:</p>
+
+<pre>
+noun_mass(WordForm, LogicalSymbol, Gender).
+</pre>
+
+<p>Mass nouns have only one word form. Defining a mass noun "water",
+for example, you can say "some water", "all water", or "5 kg of water".
+The gender of mass nouns is defined in the same way as for countable nouns 
+(see previous section). Some concrete examples:</p>
+
+<pre>
+noun_mass(water, water, neutr).
+
+noun_mass(fear, fear, neutr).
+
+noun_mass(money, money, neutr).
+</pre>
+
+<p>It is recommended to use the word form also as the logical symbol.</p>
+
+
+<h3>Measurement nouns</h3>
+
+<p>Measurement nouns (e.g. "kg", "m", "°C") are represented by only one kind of entry:</p>
+
+<pre>
+mn_sg(SingularForm, LogicalSymbol).
+mn_pl(PluralForm, LogicalSymbol).
+</pre>
+
+<p>It is recommended to define measurement nouns in the form of measurement symbols (i.e. "m" instead of "meter").
+In this case, the singular and plural forms should usually be the same. Some concrete examples:</p>
+
+<pre>
+mn_sg(kg, kg).
+mn_pl(kg, kg).
+
+mn_sg(m, m).
+mn_pl(m, m).
+
+mn_sg('°C', '°C').
+mn_pl('°C', '°C').
+</pre>
+
+<p>It is recommended to use the singular form also as the logical symbol. Furthermore, it is recommended
+to define a singular form for each plural form, and vice versa.</p>
+
+
+<h3>Proper names</h3>
+
+<p>Proper names come in two versions: one for those that require a preceeding definite article (e.g. "the Nile", "the United-Nations") and
+one for those that stand by itself (e.g. "John", "Nokia"). Proper names can also be declared in both of those categories
+(e.g. "(the) Mona-Lisa").</p>
+
+<pre>
+pn_sg(WordForm, LogicalSymbol, Gender).
+pn_pl(WordForm, LogicalSymbol, Gender).
+pndef_sg(WordForm, LogicalSymbol, Gender).
+pndef_pl(WordForm, LogicalSymbol, Gender).
+</pre>
+
+<p><tt>Gender</tt> has the same meaning as for countable nouns. Some concrete examples:</p>
+
+<pre>
+pn_sg('John', 'John', masc).
+
+pn_sg('Nokia', 'Nokia', neutr).
+
+pndef_sg('Nile', 'Nile', neutr).
+
+pndef_pl('United-Nations', 'United-Nations', neutr).
+
+pn_sg('Mona-Lisa', 'Mona-Lisa', neutr).
+pndef_sg('Mona-Lisa', 'Mona-Lisa', neutr).
+</pre>
+
+<p>It is not allowed to declare the same proper name as singular and plural at the same time.
+It is recommended to use the word form also as the logical symbol.</p>
+
+
+<h3>Intransitive verbs</h3>
+
+<p>Intransitive verbs (e.g. "waits", "goes-away", "walks") are represented by
+two different kinds of entries, defining the third singular form and the infinitive form respectively:</p>
+
+<pre>
+iv_finsg(ThirdSgForm, LogicalSymbol).
+iv_infpl(InfForm, LogicalSymbol).
+</pre>
+
+<p>The infinitive form should usually be the singular form without the 's' at the end:
+"wait", "walk". Phrasal particles should be hyphenated to the verb, e.g. "goes-away".
+Some concrete examples:</p>
+
+<pre>
+iv_finsg(waits, wait).
+iv_infpl(wait, wait).
+
+iv_finsg('goes-away', 'go-away').
+iv_infpl('go-away', 'go-away').
+
+iv_finsg(walks, walk).
+iv_infpl(walk, walk).
+</pre>
+
+<p>It is recommended to use the infinitive form also as the logical symbol. Furthermore, it is recommended
+to define a third singular form for each infinitive form, and vice versa.</p>
+
+
+<h3>Transitive verbs</h3>
+
+<p>Transitive verbs (e.g. "knows", "likes", "relates-to") are represented by three different kinds of entries,
+defining the third singular form, the infinitive form, and the past participle form respectively:</p>
+
+<pre>
+tv_finsg(ThirdSgForm, LogicalSymbol).
+tv_infpl(InfForm, LogicalSymbol).
+tv_pp(PastPartForm, LogicalSymbol).
+</pre>
+
+<p>Phrasal particles and direct prepositions should be hyphenated to the verb, e.g. "relates-to", "lives-in", and "comes-up-with".
+The past participle is the form that is used for passive voice: "known", "liked", "seen". If it is not defined then
+passive voice is not possible for the respective verb. Some concrete examples:</p>
+
+<pre>
+tv_finsg(knows, know).
+tv_infpl(know, know).
+tv_pp(known, know).
+
+tv_finsg(likes, like).
+tv_infpl(like, like).
+tv_pp(liked, like).
+
+tv_finsg('relates-to', 'relate-to').
+tv_infpl('relate-to', 'relate-to').
+tv_pp('related-to', 'relate-to').
+</pre>
+
+<p>It is recommended to use the infinitive form also as the logical symbol. It is also recommended
+to define a third singular form for each infinitive form, and vice versa. Furthermore, it is recommended to
+define third singular and infinitive forms for each past participle form.</p>
+
+
+<h3>Ditransitive verbs</h3>
+
+<p>Diransitive verbs (e.g. "shows", "forgives", "succeeds") are represented by three different kinds of entries,
+defining the third singular form, the infinitive form, and the past participle form respectively:</p>
+
+<pre>
+dv_finsg(ThirdSgForm, LogicalSymbol, Preposition).
+dv_infpl(InfForm, LogicalSymbol, Preposition).
+dv_pp(PastPartForm, LogicalSymbol, Preposition).
+</pre>
+
+<p>ACE allows two forms of ditransitive verbs:</p>
+
+<ul>
+<li>Verbs which take two complements neither of which is introduced
+by a preposition (e.g. "John shows Mary an apple.", "John forgives Mary
+her shortcomings."). The first complement is considered to be an
+indirect object, the second a direct object.
+In this case the preposition argument must be set to the empty atom ''.</li>
+
+<li>Verbs which take two complements, second of which is prepositional,
+i.e. introduced by a preposition (e.g. "John shows an apple to Mary",
+"John succeeds Mary as the president"). The first complement is considered
+to be a direct object, the second an indirect object.
+In this case the preposition argument must contain the preposition, e.g. "to" in the case of "show" and "as" in the case of "succeed".</li>
+</ul>
+
+<p>In case a verb allows both forms (such as the verb "show"), each lexicon entry must be declared twice. Some concrete examples:</p>
+
+<pre>
+dv_finsg(shows, show, '').
+dv_infpl(show, show, '').
+dv_pp(shown, show, '').
+dv_finsg(shows, show, to).
+dv_infpl(show, show, to).
+dv_pp(shown, show, to).
+
+dv_finsg(forgives, forgive, '').
+dv_infpl(forgive, forgive, '').
+dv_pp(forgiven, forgive, '').
+
+dv_finsg(succeeds, succeed, as).
+dv_infpl(succeed, succeed, as).
+dv_pp(succeeded, succeed, as).
+</pre>
+
+<p>It is recommended to use the infinitive form also as the logical symbol. It is also recommended
+to define a third singular form for each infinitive form, and vice versa. Furthermore, it is recommended to
+define third singular and infinitive forms for each past participle form.</p>
+
+
+<h3>Prepositions</h3>
+
+<p>Prepositions (e.g. "in", "for", "during") are represented by only one kind of entry:</p>
+
+<pre>
+prep(WordForm, LogicalSymbol).
+</pre>
+
+<p>Prepositions have only one word form. Some concrete examples:</p>
+
+<pre>
+prep(in, in).
+
+prep(for, for).
+
+prep(during, during).
+</pre>
+
+<p>It is recommended to use the word form also as the logical symbol.</p>
+
+
+<h2>Aliases</h2>
+
+<p>In order to define aliases, i.e. word forms that are parsed in exactly the same way, one has to create several entries
+with the same logical symbol. Some examples:</p>
+
+<pre>
+adj_itr(gray, gray).
+adj_itr(grey, gray).
+
+noun_sg(cactus, cactus, neutr).
+noun_pl(cacti, cactus, neutr).
+noun_pl(cactuses, cactus, neutr).
+
+pndef_pl('United-States', 'USA', neutr).
+pndef_pl('USA', 'USA', neutr).
+</pre>
+
+
+<h2>Word class intersections</h2>
+
+<p>Generally, word class intersections are allowed. E.g. the verb "eats" can be declared as an intransitive
+verb and as a transitive verb at the same time. But there are some intersections that are not allowed:</p>
+
+<ul>
+<li>Adverbs are not allowed to intersect with countable nouns or mass nouns.</li>
+<li>Adverbs are not allowed to intersect with intransitive verbs.</li>
+<li>Intransitive adjectives are not allowed to intersect with transitive adjectives.</li>
+<li>Proper names with a definite article are not allowed to intersect with countable nouns or mass nouns.</li>
+<li>Prepositions are not allowed to intersect with intransitive adjectives.</li>
+<li>Prepositions are not allowed to intersect with transitive verbs.</li>
+</ul>
+
+<p>The following table illustrates these restrictions. Fields containing an "X" denote intersections that
+are not allowed. (The gray fields are a mirror image of the white ones.)</p>
+
+<blockquote><p><img src="http://attempto.ifi.uzh.ch/site/docs/images/intersect_080728.jpg" width="600" height="600" alt="Word class intersection table"/></p></blockquote>
+
+<p>In addition, the following function words cannot be used as word forms in the lexicon:</p>
+
+<pre>
+null, zero, one, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve, dozen, there,
+and, or, not, that, than, of, if, then, such, be, provably, more, most, are, is, the, a, an, some,
+no, every, all, each, which, its, his, her, their, whose, it, he, she, they, him, them, itself,
+himself, herself, themselves, someone, somebody, something, nobody, nothing, everyone, everybody,
+everything, what, who, how, where, when
+</pre>
+
+<p>All other function words (e.g. "can", "at", "true") can be used.</p>
+
+
+<address>
+2013-07-31
+</address>
+
+</body>
+</html>
